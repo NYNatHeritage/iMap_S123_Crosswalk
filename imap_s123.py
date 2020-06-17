@@ -5,11 +5,13 @@ import requests, json, pickle, urllib, copy, sys, os, getpass, imap_s123_photo, 
 imap_url = 'https://imapdev.natureserve.org/imap/services'
 agol_url = 'https://services6.arcgis.com/DZHaqZm9cxOD4CWM/ArcGIS/rest/services/service_eea314a679b549d09bcdf7e1799db7e2/FeatureServer'
 
-searched_area_query = 'objectid > 4'
+searched_area_query = 'iMap3SAId IS NULL'
 
 agol_token = ""
 
 working_directory_file_path = ""
+
+generic_person_id = 16500 # note: this is a placeholder 
 # end variables
 ##
 
@@ -492,6 +494,10 @@ class presences:
                         'psMicroOrganism': None
                     }
 
+                    # if the user is an annonymous AGOL user, add the person name and email into admin comments
+                    if self.agol.searched_area.attributes['personName'] or self.agol.searched_area.attributes['personEmail']:
+                        new_present_species['adminComments'] = 'Submitter Name: {0}\nSubmitter Email Address: {1}'.format(self.agol.searched_area.attributes['personName'], self.agol.searched_area.attributes['personEmail'])
+
                     # check for any photos
                     new_present_species['photos'] = imap_s123_photo.agol_imap_photo_handler(agol_url, 6, present_species['objectid'], iMapSession, imap_url, agol_token)
 
@@ -501,7 +507,7 @@ class presences:
                     'areaOfInterestId': None,
                     'presenceId': None,
                     'speciesList': final_present_species,
-                    'observer': {'id': self.agol.searched_area.attributes['iMapPersonID']},
+                    'observer': {'id': self.agol.searched_area.attributes['iMapPersonID'] if self.agol.searched_area.attributes['iMapPersonID'] else generic_person_id},
                     'ismas': [],
                     'timeLengthSearched': (timeLengthSearchedSum * 60) if timeLengthSearchedSum else None,
                     'states': [],
@@ -579,6 +585,10 @@ class not_detected:
                     'taggedProjects': []
                 }
 
+                # if the user is an annonymous AGOL user, add the person name and email into admin comments
+                if self.agol.searched_area.attributes['personName'] or self.agol.searched_area.attributes['personEmail']:
+                    new_not_detected_species['adminComments'] = 'Submitter Name: {0}\nSubmitter Email Address: {1}'.format(self.agol.searched_area.attributes['personName'], self.agol.searched_area.attributes['personEmail'])
+
                 # check for any not detected photos
                 new_not_detected_species['photos'] = imap_s123_photo.agol_imap_photo_handler(agol_url, 7, not_detected_attributes['objectid'], iMapSession, imap_url, agol_token)
 
@@ -589,7 +599,7 @@ class not_detected:
                 'absenceId': None,
                 'areaOfInterest': None,
                 'areaOfInterestId': None,
-                'observer': {"id": self.agol.searched_area.attributes['iMapPersonID']},
+                'observer': {"id": self.agol.searched_area.attributes['iMapPersonID'] if self.agol.searched_area.attributes['iMapPersonID'] else generic_person_id},
                 'createdBy': {'id': 16500},
                 'observationDate': self.agol.searched_area.attributes['ObsDate'],
                 'timeLengthSearched': None,
@@ -642,7 +652,7 @@ class treatment:
                     'createdBy': {
                         'id': 16500
                     },
-                    'leadContact': {'id': self.agol.searched_area.attributes['iMapPersonID']},
+                    'leadContact': {'id': self.agol.searched_area.attributes['iMapPersonID'] if self.agol.searched_area.attributes['iMapPersonID'] else generic_person_id},
                     'sensitiveInd': False,
                     'survey123Version': None,
                     'adminComments': None,
@@ -745,6 +755,11 @@ class treatment:
                         'dbioagentReleaseStageId': treatment_attributes['dbioagentReleaseStageId'],
                         'dbioagentSpeciesId': treatment_attributes['dbioagentSpeciesIdTrt']
                     }
+
+                                # if the user is an annonymous AGOL user, add the person name and email into admin comments
+                
+                if self.agol.searched_area.attributes['personName'] or self.agol.searched_area.attributes['personEmail']:
+                    new_treatment['adminComments'] = 'Submitter Name: {0}\nSubmitter Email Address: {1}'.format(self.agol.searched_area.attributes['personName'], self.agol.searched_area.attributes['personEmail'])
 
                 self.final_treatment.append(new_treatment)
 
