@@ -551,6 +551,9 @@ class not_detected:
         not_detected_species = []
 
         if self.agol.not_detected.raw_not_detected:
+            # initialize a variable to store total time searched for not detected records
+            timeLengthSearchedNDSum = 0
+
             # assemble all not detected species
             for not_detected_record in self.agol.not_detected.raw_not_detected:
                 # get a new species record
@@ -585,6 +588,9 @@ class not_detected:
                     'taggedProjects': []
                 }
 
+                # add to timeLengthSearched if set
+                timeLengthSearchedNDSum += not_detected_attributes['lengthTimeSearchedND'] if not_detected_attributes['lengthTimeSearchedND'] else 0
+
                 # if the user is an annonymous AGOL user, add the person name and email into admin comments
                 if self.agol.searched_area.attributes['personName'] or self.agol.searched_area.attributes['personEmail']:
                     new_not_detected_species['adminComments'] = 'Submitter Name: {0}\nSubmitter Email Address: {1}'.format(self.agol.searched_area.attributes['personName'], self.agol.searched_area.attributes['personEmail'])
@@ -602,7 +608,7 @@ class not_detected:
                 'observer': {"id": self.agol.searched_area.attributes['iMapPersonID'] if self.agol.searched_area.attributes['iMapPersonID'] else generic_person_id},
                 'createdBy': {'id': 16500},
                 'observationDate': self.agol.searched_area.attributes['ObsDate'],
-                'timeLengthSearched': None,
+                'timeLengthSearched': (timeLengthSearchedNDSum * 60) if timeLengthSearchedNDSum else None,
                 'modifiedDate': None,
                 'modifiedBy': None,
                 'absencePolygon': {'shape': {'rings': self.agol.searched_area.geom['rings'], 'spatialReference': self.agol.searched_area.raw_response['spatialReference']}},
